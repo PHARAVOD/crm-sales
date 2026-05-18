@@ -1,12 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import datetime
 import uvicorn
 
 app = FastAPI()
 
-# Разрешаем CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,6 +15,7 @@ app.add_middleware(
 )
 
 tasks_db = []
+products_catalog = []  # Справочник товаров из модуля А
 task_counter = 1
 
 class TaskCreate(BaseModel):
@@ -28,6 +29,12 @@ class Task(TaskCreate):
     id: int
     status: str = "pending"
 
+class WebhookProduct(BaseModel):
+    event: str
+    timestamp: str
+    data: dict
+
+# ========== СУЩЕСТВУЮЩИЕ ЭНДПОИНТЫ ==========
 @app.get("/tasks", response_model=List[Task])
 def get_tasks():
     return tasks_db
@@ -50,7 +57,4 @@ def complete_task(task_id: int):
         if task.id == task_id:
             task.status = "completed"
             return {"message": "Task completed", "task": task}
-    raise HTTPException(404, "Task not found")
-
-if __name__ == "__main__":
-    uvicorn.run(app, port=5003)
+    raise HTTPException(404, "Task not

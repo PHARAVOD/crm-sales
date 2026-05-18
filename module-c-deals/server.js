@@ -4,19 +4,10 @@ const PORT = 3000;
 
 app.use(express.json());
 
-// РАЗРЕШАЕМ CORS
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-    next();
-});
-
 let deals = [];
+let productsCatalog = []; // Справочник товаров из модуля А
 
+// ========== СУЩЕСТВУЮЩИЕ ЭНДПОИНТЫ ==========
 app.get('/deals', (req, res) => {
     res.json(deals);
 });
@@ -46,6 +37,49 @@ app.patch('/deals/:id/stage', (req, res) => {
     res.json(deal);
 });
 
+// ========== НОВЫЙ: ВЕБХУК ДЛЯ ПРИЕМА ТОВАРОВ ==========
+app.post('/api/webhooks/product-created', (req, res) => {
+    const { event, timestamp, data } = req.body;
+    
+    console.log(`📦 Получен вебхук: ${event} в ${timestamp}`);
+    console.log(`📦 Товар: ${data.product_name} (${data.price} руб)`);
+    
+    // Сохраняем товар в локальный справочник
+    const product = {
+        id: data.product_id,
+        name: data.product_name,
+        price: data.price,
+        category: data.category,
+        syncedAt: new Date()
+    };
+    
+    // Проверяем, есть ли уже такой товар
+    const existingIndex = productsCatalog.findIndex(p => p.id === product.id);
+    if (existingIndex !== -1) {
+        productsCatalog[existingIndex] = product;
+        console.log(`🔄 Товар обновлен в справочнике`);
+    } else {
+        productsCatalog.push(product);
+        console.log(`✅ Товар добавлен в справочник`);
+    }
+    
+    res.json({ 
+        received: true, 
+        product: product,
+        catalogSize: productsCatalog.length 
+    });
+});
+
+// ========== НОВЫЙ: ПОЛУЧИТЬ СПРАВОЧНИК ТОВАРОВ ==========
+app.get('/api/products-catalog', (req, res) => {
+    res.json({
+        products: productsCatalog,
+        count: productsCatalog.length,
+        lastSync: new Date()
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`✅ Модуль Сделок запущен на порту ${PORT}`);
+    console.log(`📡 Вебхук эндпоинт: http://localhost:${PORT}/api/webhooks/product-created`);
 });

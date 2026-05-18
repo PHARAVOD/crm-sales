@@ -1,0 +1,16 @@
+C:\crm-sales\Crm.Database\obj\Debug\net10.0\Crm.Database.csproj.AssemblyReference.cache
+C:\crm-sales\Crm.Database\obj\Debug\net10.0\Crm.Database.GeneratedMSBuildEditorConfig.editorconfig
+C:\crm-sales\Crm.Database\obj\Debug\net10.0\Crm.Database.AssemblyInfoInputs.cache
+C:\crm-sales\Crm.Database\obj\Debug\net10.0\Crm.Database.AssemblyInfo.cs
+C:\crm-sales\Crm.Database\obj\Debug\net10.0\Crm.Database.csproj.CoreCompileInputs.cache
+C:\crm-sales\Crm.Database\obj\Debug\net10.0\Crm.Database.sourcelink.json
+C:\crm-sales\Crm.Database\bin\Debug\net10.0\appsettings.json
+C:\crm-sales\Crm.Database\bin\Debug\net10.0\Crm.Database.deps.json
+C:\crm-sales\Crm.Database\bin\Debug\net10.0\Crm.Database.runtimeconfig.json
+C:\crm-sales\Crm.Database\bin\Debug\net10.0\Crm.Database.dll
+C:\crm-sales\Crm.Database\bin\Debug\net10.0\Crm.Database.pdb
+C:\crm-sales\Crm.Database\obj\Debug\net10.0\Crm.Database.dll
+C:\crm-sales\Crm.Database\obj\Debug\net10.0\refint\Crm.Database.dll
+C:\crm-sales\Crm.Database\obj\Debug\net10.0\Crm.Database.pdb
+C:\crm-sales\Crm.Database\obj\Debug\net10.0\Crm.Database.genruntimeconfig.cache
+C:\crm-sales\Crm.Database\obj\Debug\net10.0\ref\Crm.Database.dll
