@@ -1,45 +1,114 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+version: '3.8'
 
-app = Flask(__name__)
-CORS(app)
+services:
+  # Модуль А: Лиды и Товары (Python/Flask)
+  module-a-leads:
+    build: ./module-a-leads
+    container_name: crm-leads
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=production
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - crm-network
 
-reports = []
-report_counter = 1
+  # Модуль Б: Корзина (Python/Flask)
+  module-b-cart:
+    build: ./module-b-cart
+    container_name: crm-cart
+    ports:
+      - "5002:5002"
+    environment:
+      - FLASK_ENV=production
+    depends_on:
+      - redis
+    networks:
+      - crm-network
 
-@app.route('/reports', methods=['GET'])
-def get_reports():
-    return jsonify(reports)
+  # Модуль В: Сделки (Node.js/Express)
+  module-c-deals:
+    build: ./module-c-deals
+    container_name: crm-deals
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      - crm-network
 
-@app.route('/reports/sales', methods=['POST'])
-def create_sales_report():
-    global report_counter
-    data = request.json
-    
-    report = {
-        "id": report_counter,
-        "period": data.get('period', 'daily'),
-        "total_sales": data.get('total', 0),
-        "deals_count": data.get('deals_count', 0),
-        "generated_at": str(__import__('datetime').datetime.now())
-    }
-    
-    reports.append(report)
-    report_counter += 1
-    
-    return jsonify(report), 201
+  # Модуль D: Задачи (Python/FastAPI)
+  module-d-tasks:
+    build: ./module-d-tasks
+    container_name: crm-tasks
+    ports:
+      - "5003:5003"
+    depends_on:
+      - postgres
+    networks:
+      - crm-network
 
-@app.route('/reports/summary', methods=['GET'])
-def get_summary():
-    total_sales = sum(r.get('total_sales', 0) for r in reports)
-    total_deals = sum(r.get('deals_count', 0) for r in reports)
-    
-    return jsonify({
-        "total_reports": len(reports),
-        "total_sales": total_sales,
-        "total_deals": total_deals,
-        "average_sale": total_sales / total_deals if total_deals > 0 else 0
-    })
+  # Модуль E: Отчеты (Python/Flask)
+  module-e-reports:
+    build: ./module-e-reports
+    container_name: crm-reports
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    networks:
+      - crm-network
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3001, debug=True)
+  # PostgreSQL база данных
+  postgres:
+    image: postgres:15-alpine
+    container_name: crm-postgres
+    environment:
+      POSTGRES_USER: crm_user
+      POSTGRES_PASSWORD: crm_password
+      POSTGRES_DB: crm_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - crm-network
+
+  # Redis для кэширования и сессий
+  redis:
+    image: redis:7-alpine
+    container_name: crm-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - crm-network
+
+  # Nginx как reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: crm-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./index.html:/usr/share/nginx/html/index.html
+    depends_on:
+      - module-a-leads
+      - module-b-cart
+      - module-c-deals
+      - module-d-tasks
+      - module-e-reports
+    networks:
+      - crm-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  crm-network:
+    driver: bridge
