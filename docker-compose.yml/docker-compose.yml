@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  module-a-leads:
+    build: ./module-a-leads
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=development
+
+  module-b-contacts:
+    build: ./module-b-contacts
+    ports:
+      - "5002:5002"
+
+  module-c-deals:
+    build: ./module-c-deals
+    ports:
+      - "3000:3000"
+
+  module-d-tasks:
+    build: ./module-d-tasks
+    ports:
+      - "5003:5003"
+
+  module-e-reports:
+    build: ./module-e-reports
+    ports:
+      - "3001:3001"
