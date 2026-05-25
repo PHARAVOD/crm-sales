@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "Y9t/A0/h4ek=",
+  "success": true,
+  "projectFilePath": "C:\\crm-sales\\OrderWorkflow\\OrderWorkflow.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\nikit\\.nuget\\packages\\polly\\8.6.6\\polly.8.6.6.nupkg.sha512",
+    "C:\\Users\\nikit\\.nuget\\packages\\polly.core\\8.6.6\\polly.core.8.6.6.nupkg.sha512"
+  ],
+  "logs": []
+}
