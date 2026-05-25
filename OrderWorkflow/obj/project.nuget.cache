@@ -1,11 +1,26 @@
 {
   "version": 2,
-  "dgSpecHash": "Y9t/A0/h4ek=",
-  "success": true,
+  "dgSpecHash": "ICQj3u40XJE=",
+  "success": false,
   "projectFilePath": "C:\\crm-sales\\OrderWorkflow\\OrderWorkflow.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\nikit\\.nuget\\packages\\polly\\8.6.6\\polly.8.6.6.nupkg.sha512",
-    "C:\\Users\\nikit\\.nuget\\packages\\polly.core\\8.6.6\\polly.core.8.6.6.nupkg.sha512"
+    "C:\\Users\\nikit\\.nuget\\packages\\polly\\8.4.1\\polly.8.4.1.nupkg.sha512",
+    "C:\\Users\\nikit\\.nuget\\packages\\polly.core\\8.4.1\\polly.core.8.4.1.nupkg.sha512",
+    "C:\\Users\\nikit\\.nuget\\packages\\serilog\\4.0.0\\serilog.4.0.0.nupkg.sha512",
+    "C:\\Users\\nikit\\.nuget\\packages\\serilog.sinks.console\\6.0.0\\serilog.sinks.console.6.0.0.nupkg.sha512",
+    "C:\\Users\\nikit\\.nuget\\packages\\serilog.sinks.file\\6.0.0\\serilog.sinks.file.6.0.0.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1101",
+      "level": "Error",
+      "message": "Не удалось найти пакет Serilog.Formatting.Json. Пакеты с таким идентификатором отсутствуют в следующих источниках пакетов: nuget.org",
+      "projectPath": "C:\\crm-sales\\OrderWorkflow\\OrderWorkflow.csproj",
+      "filePath": "C:\\crm-sales\\OrderWorkflow\\OrderWorkflow.csproj",
+      "libraryId": "Serilog.Formatting.Json",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    }
+  ]
 }

@@ -8,28 +8,61 @@
     ".NETCoreApp,Version=v10.0": {
       "OrderWorkflow/1.0.0": {
         "dependencies": {
-          "Polly": "8.6.6"
+          "Polly": "8.4.1",
+          "Serilog": "4.0.0",
+          "Serilog.Sinks.Console": "6.0.0",
+          "Serilog.Sinks.File": "6.0.0"
         },
         "runtime": {
           "OrderWorkflow.dll": {}
         }
       },
-      "Polly/8.6.6": {
+      "Polly/8.4.1": {
         "dependencies": {
-          "Polly.Core": "8.6.6"
+          "Polly.Core": "8.4.1"
         },
         "runtime": {
           "lib/net6.0/Polly.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.6.6.5454"
+            "fileVersion": "8.4.1.3582"
           }
         }
       },
-      "Polly.Core/8.6.6": {
+      "Polly.Core/8.4.1": {
         "runtime": {
           "lib/net8.0/Polly.Core.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.6.6.5454"
+            "fileVersion": "8.4.1.3582"
+          }
+        }
+      },
+      "Serilog/4.0.0": {
+        "runtime": {
+          "lib/net8.0/Serilog.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.0.0.0"
+          }
+        }
+      },
+      "Serilog.Sinks.Console/6.0.0": {
+        "dependencies": {
+          "Serilog": "4.0.0"
+        },
+        "runtime": {
+          "lib/net8.0/Serilog.Sinks.Console.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.0.0"
+          }
+        }
+      },
+      "Serilog.Sinks.File/6.0.0": {
+        "dependencies": {
+          "Serilog": "4.0.0"
+        },
+        "runtime": {
+          "lib/net8.0/Serilog.Sinks.File.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.0.0"
           }
         }
       }
@@ -41,19 +74,40 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Polly/8.6.6": {
+    "Polly/8.4.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-czKHYJ6uGowPijuZt4kgF4njfGvWxVZ8mKBcrZ9iEtwDe9HKdF0ug6p6TwUG8EHuuufgbDU//rSBFebt5/0Fyw==",
-      "path": "polly/8.6.6",
-      "hashPath": "polly.8.6.6.nupkg.sha512"
+      "sha512": "sha512-kBxql53peR0bjxeEuuY114GD2rmC0tkUwE1xuKUlnd74ULEsGu3OwcLH56KkwxBPUbOysPa7stT9SJ6pKGTzlg==",
+      "path": "polly/8.4.1",
+      "hashPath": "polly.8.4.1.nupkg.sha512"
     },
-    "Polly.Core/8.6.6": {
+    "Polly.Core/8.4.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-lCBL9mmhF9TZxHG3beVRkyjlLohkIC464xIAq7J7Y59C+z42hmsdUaeCKl2SIAYertOUU5TeBXyQDLDQGIKePQ==",
-      "path": "polly.core/8.6.6",
-      "hashPath": "polly.core.8.6.6.nupkg.sha512"
+      "sha512": "sha512-bg4kE7mFwXc6FJ8NLknTgVgLAMlbToWC7vpdqAITv8lPzKpp9v7aWJPc04GRoZQaJhVY/tdr8K2/VW2aTmaA1Q==",
+      "path": "polly.core/8.4.1",
+      "hashPath": "polly.core.8.4.1.nupkg.sha512"
+    },
+    "Serilog/4.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-2jDkUrSh5EofOp7Lx5Zgy0EB+7hXjjxE2ktTb1WVQmU00lDACR2TdROGKU0K1pDTBSJBN1PqgYpgOZF8mL7NJw==",
+      "path": "serilog/4.0.0",
+      "hashPath": "serilog.4.0.0.nupkg.sha512"
+    },
+    "Serilog.Sinks.Console/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fQGWqVMClCP2yEyTXPIinSr5c+CBGUvBybPxjAGcf7ctDhadFhrQw03Mv8rJ07/wR5PDfFjewf2LimvXCDzpbA==",
+      "path": "serilog.sinks.console/6.0.0",
+      "hashPath": "serilog.sinks.console.6.0.0.nupkg.sha512"
+    },
+    "Serilog.Sinks.File/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-lxjg89Y8gJMmFxVkbZ+qDgjl+T4yC5F7WSLTvA+5q0R04tfKVLRL/EHpYoJ/MEQd2EeCKDuylBIVnAYMotmh2A==",
+      "path": "serilog.sinks.file/6.0.0",
+      "hashPath": "serilog.sinks.file.6.0.0.nupkg.sha512"
     }
   }
 }

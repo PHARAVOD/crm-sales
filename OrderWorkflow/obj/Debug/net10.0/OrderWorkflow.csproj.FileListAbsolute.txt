@@ -17,3 +17,6 @@ C:\crm-sales\OrderWorkflow\obj\Debug\net10.0\refint\OrderWorkflow.dll
 C:\crm-sales\OrderWorkflow\obj\Debug\net10.0\OrderWorkflow.pdb
 C:\crm-sales\OrderWorkflow\obj\Debug\net10.0\OrderWorkflow.genruntimeconfig.cache
 C:\crm-sales\OrderWorkflow\obj\Debug\net10.0\ref\OrderWorkflow.dll
+C:\crm-sales\OrderWorkflow\bin\Debug\net10.0\Serilog.dll
+C:\crm-sales\OrderWorkflow\bin\Debug\net10.0\Serilog.Sinks.Console.dll
+C:\crm-sales\OrderWorkflow\bin\Debug\net10.0\Serilog.Sinks.File.dll
