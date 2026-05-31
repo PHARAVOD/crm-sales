@@ -1,0 +1,47 @@
+@startuml
+' ============================================
+' USE CASE DIAGRAM - CRM СИСТЕМА
+' ============================================
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Покупатель" as Customer
+actor "Менеджер" as Manager
+actor "Система оплаты" as PaymentSystem
+actor "Складская система" as StockSystem
+
+rectangle "CRM Система продаж" {
+  
+  usecase "UC1: Просмотр каталога" as UC1
+  usecase "UC2: Добавление в корзину" as UC2
+  usecase "UC3: Оформление заказа" as UC3
+  usecase "UC4: Проверка остатков" as UC4
+  usecase "UC5: Оплата заказа" as UC5
+  usecase "UC6: Просмотр заказов" as UC6
+  usecase "UC7: Обновление статуса" as UC7
+  usecase "UC8: Генерация отчетов" as UC8
+  usecase "UC9: Получение уведомлений" as UC9
+  
+  ' Связи покупателя
+  Customer --> UC1
+  Customer --> UC2
+  Customer --> UC3
+  Customer --> UC9
+  
+  ' Связи менеджера
+  Manager --> UC6
+  Manager --> UC7
+  Manager --> UC8
+  
+  ' Внешние системы
+  UC5 --> PaymentSystem
+  UC4 --> StockSystem
+  
+  ' Extend и Include отношения
+  UC3 ..> UC4 : <<extend>>
+  UC3 ..> UC5 : <<include>>
+  UC3 ..> UC9 : <<extend>>
+}
+
+@enduml

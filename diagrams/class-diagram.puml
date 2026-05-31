@@ -1,0 +1,90 @@
+@startuml
+' ============================================
+' CLASS DIAGRAM - Интеграционный слой (Оркестратор)
+' ============================================
+
+skinparam classAttributeIconSize 0
+
+interface ICrmOrchestrator {
+  + ExecuteOrderWorkflow(customerId, items): Result
+  + GetOrderStatus(orderId): OrderStatus
+  + CancelOrder(orderId): Result
+}
+
+class SagaOrchestrator {
+  - _paymentService: PaymentService
+  - _stockService: StockService
+  - _orderId: int
+  + ExecuteOrderWorkflow(customerId, items): Result
+  - ProcessPayment(amount): Result
+  - CheckStock(productId, quantity): Result
+  - Compensate(order): Task
+}
+
+class OrderStateMachine {
+  - _order: Order
+  - _transitions: Dictionary
+  + TransitionTo(newStatus, reason): bool
+  + CanTransitionTo(newStatus): bool
+  + GetCurrentStatus(): OrderStatus
+}
+
+class PaymentService {
+  - _failureCount: int
+  + ProcessPaymentAsync(amount, orderId): Result
+  + RefundPaymentAsync(orderId): Result
+}
+
+class StockService {
+  - _stock: Dictionary<int, int>
+  + CheckStockAsync(productId, quantity): Result
+  + ReserveStockAsync(productId, quantity): Result
+  + ReleaseStockAsync(productId, quantity): Result
+}
+
+enum OrderStatus {
+  New
+  Paid
+  Shipped
+  Delivered
+  Cancelled
+  Failed
+}
+
+class Order {
+  + Id: int
+  + CustomerId: int
+  + Items: List<OrderItem>
+  + TotalAmount: decimal
+  + Status: OrderStatus
+  + CreatedAt: DateTime
+  + EventLog: List<string>
+}
+
+class OrderItem {
+  + ProductId: int
+  + ProductName: string
+  + Quantity: int
+  + Price: decimal
+  + Total: decimal
+}
+
+class Result {
+  + Success: bool
+  + Message: string
+  + Data: object
+  + Ok(msg): Result
+  + Fail(msg): Result
+}
+
+' Связи
+SagaOrchestrator ..|> ICrmOrchestrator
+SagaOrchestrator *-- PaymentService
+SagaOrchestrator *-- StockService
+SagaOrchestrator *-- OrderStateMachine
+OrderStateMachine --> Order
+Order *-- OrderItem
+OrderStateMachine --> OrderStatus
+SagaOrchestrator --> Result
+
+@enduml

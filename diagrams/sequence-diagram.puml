@@ -1,0 +1,106 @@
+@startuml
+' ============================================
+' SEQUENCE DIAGRAM - Оформление заказа (End-to-End)
+' ============================================
+
+actor "Покупатель" as Customer
+participant "UI\n(Frontend)" as UI
+participant "Saga\nOrchestrator" as Saga
+participant "Payment\nService" as Payment
+participant "Stock\nService" as Stock
+participant "Order\nState Machine" as State
+database "База данных" as DB
+
+== Успешный сценарий ==
+
+Customer -> UI: 1. Нажимает "Купить"
+activate UI
+
+UI -> Saga: 2. POST /api/orders/create
+activate Saga
+
+Saga -> Payment: 3. ProcessPayment(amount)
+activate Payment
+
+Payment --> Saga: 4. PaymentSuccess
+deactivate Payment
+
+Saga -> State: 5. TransitionTo(Paid)
+activate State
+State --> Saga: 6. Status changed
+deactivate State
+
+Saga -> Stock: 7. CheckStock(productId, quantity)
+activate Stock
+
+Stock --> Saga: 8. StockAvailable
+deactivate Stock
+
+Saga -> State: 9. TransitionTo(Shipped)
+activate State
+State --> Saga: 10. Status changed
+deactivate State
+
+Saga -> State: 11. TransitionTo(Delivered)
+activate State
+State --> Saga: 12. Status changed
+deactivate State
+
+Saga -> DB: 13. SaveOrder()
+activate DB
+DB --> Saga: 14. OrderSaved
+deactivate DB
+
+Saga --> UI: 15. OrderSuccess
+deactivate Saga
+
+UI -> Customer: 16. Показать "Заказ доставлен"
+deactivate UI
+
+== Сценарий с ошибкой и компенсацией ==
+
+Customer -> UI: 17. Ошибка при оплате
+activate UI
+
+UI -> Saga: 18. POST /api/orders/create (сумма > лимита)
+activate Saga
+
+Saga -> Payment: 19. ProcessPayment(amount)
+activate Payment
+
+Payment --> Saga: 20. PaymentFailed (лимит превышен)
+deactivate Payment
+
+Saga -> State: 21. TransitionTo(Failed)
+activate State
+State --> Saga: 22. Status changed
+deactivate State
+
+note right of Saga
+  **ЗАПУСК КОМПЕНСАЦИИ (Saga Pattern)**
+  - Возврат средств
+  - Отмена резерва товаров
+end note
+
+Saga -> Payment: 23. RefundPayment()
+activate Payment
+Payment --> Saga: 24. RefundSuccess
+deactivate Payment
+
+Saga -> Stock: 25. ReleaseStock()
+activate Stock
+Stock --> Saga: 26. ReleaseSuccess
+deactivate Stock
+
+Saga -> State: 27. TransitionTo(Cancelled)
+activate State
+State --> Saga: 28. Status changed
+deactivate State
+
+Saga --> UI: 29. OrderFailed + ErrorMessage
+deactivate Saga
+
+UI -> Customer: 30. Показать "Ошибка: превышен лимит"
+deactivate UI
+
+@enduml
