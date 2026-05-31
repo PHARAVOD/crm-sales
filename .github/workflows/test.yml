@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run All Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 10.0.x
+      
+      - name: Restore dependencies
+        run: dotnet restore tests/UnitTests/UnitTests.csproj
+      
+      - name: Run Unit Tests
+        run: dotnet test tests/UnitTests/UnitTests.csproj --no-restore --verbosity normal
+      
+      - name: Run Integration Tests
+        run: dotnet test tests/IntegrationTests/IntegrationTests.csproj --no-restore --verbosity normal
+      
+      - name: Run E2E Tests
+        run: dotnet test tests/E2ETests/E2ETests.csproj --no-restore --verbosity normal

@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="E2ETests/E2ETests.csproj" />
+  <Project Path="IntegrationTests/IntegrationTests.csproj" />
+  <Project Path="UnitTests/UnitTests.csproj" />
+</Solution>
