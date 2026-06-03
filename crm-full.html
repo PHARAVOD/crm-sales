@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CRM Полная версия + Лог</title>
+    <meta charset="utf-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial; background: #f0f2f5; padding: 20px; }
+        h1 { text-align: center; margin-bottom: 20px; color: #333; }
+        h2 { font-size: 16px; margin-bottom: 10px; color: #007bff; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .card { background: white; border-radius: 10px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .item { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 13px; }
+        button { background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; margin: 2px; font-size: 12px; }
+        button:hover { opacity: 0.8; }
+        .btn-success { background: #28a745; }
+        .input-field { padding: 5px; border: 1px solid #ddd; border-radius: 5px; margin: 2px; font-size: 12px; }
+        .form-row { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
+        .status { font-size: 10px; padding: 2px 5px; border-radius: 8px; display: inline-block; }
+        .status-new { background: #17a2b8; color: white; }
+        .status-paid { background: #28a745; color: white; }
+        .status-shipped { background: #ffc107; color: #333; }
+        .status-delivered { background: #28a745; color: white; }
+        .status-cancelled { background: #dc3545; color: white; }
+        .status-pending { background: #ffc107; color: #333; }
+        .status-completed { background: #28a745; color: white; }
+        .server-status { font-size: 11px; text-align: center; padding: 10px; background: #e9ecef; border-radius: 10px; margin-bottom: 20px; }
+        .total { font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid #ddd; }
+        
+        /* ЛОГ */
+        .log-card { margin-top: 20px; }
+        .log-container { background: #1e1e1e; color: #d4d4d4; border-radius: 10px; padding: 15px; height: 250px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px; }
+        .log-info { color: #4ec9b0; }
+        .log-success { color: #6a9955; }
+        .log-error { color: #f14c4c; }
+        .log-warning { color: #dcdcaa; }
+        .log-time { color: #858585; }
+        
+        .msg { padding: 10px; border-radius: 5px; margin-top: 10px; display: none; position: fixed; top: 20px; right: 20px; z-index: 1000; }
+        .msg.success { background: #d4edda; color: #155724; display: block; }
+        .msg.error { background: #f8d7da; color: #721c24; display: block; }
+    </style>
+</head>
+<body>
+
+<h1>🏢 CRM СИСТЕМА ОТДЕЛА ПРОДАЖ</h1>
+
+<div class="server-status" id="serverStatus">🔄 Проверка серверов...</div>
+<div id="message" class="msg"></div>
+
+<div class="grid">
+
+    <!-- БЛОК 1: ЛИДЫ -->
+    <div class="card">
+        <h2>🎯 Лиды</h2>
+        <div id="leadsList">Загрузка...</div>
+        <div class="form-row">
+            <input type="text" id="leadName" placeholder="Имя" class="input-field" style="flex:2">
+            <input type="text" id="leadPhone" placeholder="Телефон" class="input-field" style="flex:1">
+            <button onclick="addLead()">➕</button>
+        </div>
+    </div>
+
+    <!-- БЛОК 2: КОНТАКТЫ -->
+    <div class="card">
+        <h2>📇 Контакты</h2>
+        <div id="contactsList">Загрузка...</div>
+    </div>
+
+    <!-- БЛОК 3: ТОВАРЫ -->
+    <div class="card">
+        <h2>🛍️ Товары</h2>
+        <div id="productsList">Загрузка...</div>
+    </div>
+
+    <!-- БЛОК 4: КОРЗИНА -->
+    <div class="card">
+        <h2>🛒 Корзина</h2>
+        <div id="cartList">Пусто</div>
+        <button class="btn-success" onclick="createOrder()" style="width:100%; margin-top:10px;">✅ Оформить заказ</button>
+    </div>
+
+    <!-- БЛОК 5: СДЕЛКИ -->
+    <div class="card">
+        <h2>💼 Сделки</h2>
+        <div id="dealsList">Загрузка...</div>
+    </div>
+
+    <!-- БЛОК 6: ЗАДАЧИ -->
+    <div class="card">
+        <h2>✅ Задачи</h2>
+        <div id="tasksList">Загрузка...</div>
+        <div class="form-row">
+            <input type="text" id="taskTitle" placeholder="Название" class="input-field" style="flex:2">
+            <input type="text" id="taskAssigned" placeholder="Кому" class="input-field" style="flex:1">
+            <button onclick="addTask()">➕</button>
+        </div>
+    </div>
+
+    <!-- БЛОК 7: ОТЧЕТЫ -->
+    <div class="card">
+        <h2>📊 Отчеты</h2>
+        <div id="reportsList">Загрузка...</div>
+        <button onclick="generateReport()" style="width:100%; margin-top:10px;">📈 Создать отчет</button>
+    </div>
+
+</div>
+
+<!-- БЛОК 8: ЛОГ ИНТЕГРАЦИИ -->
+<div class="card log-card">
+    <h2>📋 ЛОГ ИНТЕГРАЦИИ (Real-time)</h2>
+    <div class="log-container" id="logContainer">
+        <div class="log-info">🟢 Система готова к работе</div>
+    </div>
+</div>
+
+<script>
+    // ========================================
+    // API АДРЕСА
+    // ========================================
+    const API = {
+    leads: 'http://localhost:5001/leads',
+    contacts: 'http://localhost:5001/contacts',
+    products: 'http://localhost:5001/products',
+    cart: 'http://localhost:5002/cart',
+    cartAdd: 'http://localhost:5002/cart/add',
+    cartClear: 'http://localhost:5002/cart/clear',
+    deals: 'http://localhost:3000/deals',           // ← это должно быть
+    dealsCreate: 'http://localhost:3000/deals/create',
+    tasks: 'http://localhost:5003/tasks',
+    tasksCreate: 'http://localhost:5003/tasks/create',
+    reports: 'http://localhost:3001/reports',
+    reportsSales: 'http://localhost:3001/reports/sales'
+};
+
+    // ========================================
+    // ЛОГГЕР
+    // ========================================
+    function addLog(message, type = 'info') {
+        const logDiv = document.getElementById('logContainer');
+        const time = new Date().toLocaleTimeString();
+        let colorClass = 'log-info';
+        let icon = '🔵';
+        if (type === 'success') { colorClass = 'log-success'; icon = '✅'; }
+        if (type === 'error') { colorClass = 'log-error'; icon = '❌'; }
+        if (type === 'warning') { colorClass = 'log-warning'; icon = '⚠️'; }
+        
+        const logEntry = document.createElement('div');
+        logEntry.className = colorClass;
+        logEntry.innerHTML = `<span class="log-time">[${time}]</span> ${icon} ${message}`;
+        logDiv.appendChild(logEntry);
+        logDiv.scrollTop = logDiv.scrollHeight;
+        
+        // Ограничим количество логов
+        while(logDiv.children.length > 50) {
+            logDiv.removeChild(logDiv.firstChild);
+        }
+    }
+
+    // Показать всплывающее сообщение
+    function showMessage(msg, type) {
+        const div = document.getElementById('message');
+        div.className = `msg ${type}`;
+        div.innerHTML = msg;
+        setTimeout(() => { div.className = 'msg'; }, 3000);
+    }
+
+    // ========================================
+    // СТАТУС СЕРВЕРОВ
+    // ========================================
+    async function checkServers() {
+        let statusHtml = '🔄 Статус серверов: ';
+        
+        try { await fetch(API.products); statusHtml += '✅ А(5001) '; addLog('Модуль А (Товары) работает', 'success'); } 
+        catch(e) { statusHtml += '❌ А '; addLog('Модуль А (Товары) НЕ работает', 'error'); }
+        
+        try { await fetch(API.cart); statusHtml += '✅ Б(5002) '; addLog('Модуль Б (Корзина) работает', 'success'); } 
+        catch(e) { statusHtml += '❌ Б '; addLog('Модуль Б (Корзина) НЕ работает', 'error'); }
+        
+        try { await fetch(API.deals); statusHtml += '✅ В(3000) '; addLog('Модуль В (Сделки) работает', 'success'); } 
+        catch(e) { statusHtml += '❌ В '; addLog('Модуль В (Сделки) НЕ работает', 'error'); }
+        
+        try { await fetch(API.tasks); statusHtml += '✅ D(5003) '; addLog('Модуль D (Задачи) работает', 'success'); } 
+        catch(e) { statusHtml += '❌ D '; addLog('Модуль D (Задачи) НЕ работает', 'error'); }
+        
+        try { await fetch(API.reports); statusHtml += '✅ E(3001) '; addLog('Модуль E (Отчеты) работает', 'success'); } 
+        catch(e) { statusHtml += '❌ E '; addLog('Модуль E (Отчеты) НЕ работает', 'error'); }
+        
+        document.getElementById('serverStatus').innerHTML = statusHtml;
+    }
+
+    // ========================================
+    // ЛИДЫ
+    // ========================================
+    async function loadLeads() {
+        try {
+            const res = await fetch(API.leads);
+            const data = await res.json();
+            if(data.length === 0) { document.getElementById('leadsList').innerHTML = 'Нет лидов'; return; }
+            let html = '';
+            for(let l of data) {
+                html += `<div class="item"><b>${l.name}</b><br>📞 ${l.phone || '-'}<br><span class="status status-${l.status || 'new'}">${l.status || 'new'}</span></div>`;
+            }
+            document.getElementById('leadsList').innerHTML = html;
+        } catch(e) { document.getElementById('leadsList').innerHTML = '❌ Ошибка'; addLog('Ошибка загрузки лидов', 'error'); }
+    }
+
+    async function addLead() {
+        const name = document.getElementById('leadName').value;
+        const phone = document.getElementById('leadPhone').value;
+        if(!name) { showMessage('Введите имя', 'error'); addLog('Попытка добавить лида без имени', 'warning'); return; }
+        try {
+            await fetch(API.leads, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name: name, phone: phone, status: 'new'})
+            });
+            document.getElementById('leadName').value = '';
+            document.getElementById('leadPhone').value = '';
+            loadLeads();
+            addLog(`Новый лид добавлен: ${name}`, 'success');
+            showMessage('✅ Лид добавлен', 'success');
+        } catch(e) { addLog(`Ошибка добавления лида ${name}`, 'error'); showMessage('Ошибка', 'error'); }
+    }
+
+    // ========================================
+    // КОНТАКТЫ
+    // ========================================
+    async function loadContacts() {
+        try {
+            const res = await fetch(API.contacts);
+            const data = await res.json();
+            if(data.length === 0) { document.getElementById('contactsList').innerHTML = 'Нет контактов'; return; }
+            let html = '';
+            for(let c of data) {
+                html += `<div class="item"><b>${c.name || c.Name}</b><br>📞 ${c.phone || c.Phone || '-'}</div>`;
+            }
+            document.getElementById('contactsList').innerHTML = html;
+        } catch(e) { document.getElementById('contactsList').innerHTML = '❌ Ошибка'; }
+    }
+
+    // ========================================
+    // ТОВАРЫ
+    // ========================================
+    async function loadProducts() {
+        try {
+            const res = await fetch(API.products);
+            const data = await res.json();
+            let html = '';
+            for(let p of data) {
+                html += `<div class="item"><b>${p.name}</b> - ${p.price} ₽<br><button onclick="addToCart(${p.id}, '${p.name}', ${p.price})">➕ В корзину</button></div>`;
+            }
+            document.getElementById('productsList').innerHTML = html;
+            addLog(`Загружено ${data.length} товаров`, 'info');
+        } catch(e) { document.getElementById('productsList').innerHTML = '❌ Ошибка'; addLog('Ошибка загрузки товаров', 'error'); }
+    }
+
+    async function addToCart(id, name, price) {
+        try {
+            await fetch(API.cartAdd, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id, name: name, price: price})
+            });
+            loadCart();
+            addLog(`Товар "${name}" добавлен в корзину`, 'success');
+            showMessage(`✅ ${name} добавлен в корзину`, 'success');
+        } catch(e) { addLog(`Ошибка добавления "${name}" в корзину`, 'error'); showMessage('Ошибка', 'error'); }
+    }
+
+    // ========================================
+    // КОРЗИНА
+    // ========================================
+    async function loadCart() {
+        try {
+            const res = await fetch(API.cart);
+            const data = await res.json();
+            if(data.length === 0) { document.getElementById('cartList').innerHTML = 'Корзина пуста'; return; }
+            let total = 0;
+            let html = '';
+            for(let item of data) {
+                total += item.price;
+                html += `<div class="item">${item.name} - ${item.price} ₽</div>`;
+            }
+            html += `<div class="total">Итого: ${total} ₽</div>`;
+            document.getElementById('cartList').innerHTML = html;
+        } catch(e) { document.getElementById('cartList').innerHTML = '❌ Ошибка'; addLog('Ошибка загрузки корзины', 'error'); }
+    }
+
+    // ========================================
+    // СДЕЛКИ
+    // ========================================
+    async function loadDeals() {
+        try {
+            const res = await fetch(API.deals);
+            const data = await res.json();
+            if(data.length === 0) { document.getElementById('dealsList').innerHTML = 'Нет сделок'; return; }
+            let html = '';
+            for(let d of data) {
+                html += `<div class="item"><b>Сделка #${d.id}</b><br>💰 ${d.amount || 0} ₽<br><span class="status status-${d.stage || 'new'}">${d.stage || 'new'}</span></div>`;
+            }
+            document.getElementById('dealsList').innerHTML = html;
+        } catch(e) { document.getElementById('dealsList').innerHTML = '❌ Ошибка'; }
+    }
+
+    // ========================================
+    // ЗАДАЧИ
+    // ========================================
+    async function loadTasks() {
+        try {
+            const res = await fetch(API.tasks);
+            const data = await res.json();
+            if(data.length === 0) { document.getElementById('tasksList').innerHTML = 'Нет задач'; return; }
+            let html = '';
+            for(let t of data) {
+                html += `<div class="item"><b>${t.title}</b><br>👤 ${t.assigned_to}<br><span class="status status-${t.status}">${t.status}</span></div>`;
+            }
+            document.getElementById('tasksList').innerHTML = html;
+        } catch(e) { document.getElementById('tasksList').innerHTML = '❌ Ошибка'; }
+    }
+
+    async function addTask() {
+        const title = document.getElementById('taskTitle').value;
+        const assigned = document.getElementById('taskAssigned').value;
+        if(!title) { showMessage('Введите название задачи', 'error'); return; }
+        try {
+            await fetch(API.tasksCreate, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    title: title,
+                    assigned_to: assigned || 'manager@crm.com',
+                    deal_id: 1,
+                    due_date: '2026-06-10'
+                })
+            });
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskAssigned').value = '';
+            loadTasks();
+            addLog(`Новая задача: "${title}"`, 'success');
+            showMessage('✅ Задача добавлена', 'success');
+        } catch(e) { addLog(`Ошибка добавления задачи "${title}"`, 'error'); showMessage('Ошибка', 'error'); }
+    }
+
+    // ========================================
+    // ОТЧЕТЫ
+    // ========================================
+    async function loadReports() {
+        try {
+            const res = await fetch(API.reports);
+            const data = await res.json();
+            if(data.length === 0) { document.getElementById('reportsList').innerHTML = 'Нет отчетов'; return; }
+            let html = '';
+            for(let r of data) {
+                html += `<div class="item"><b>Отчет #${r.id}</b><br>📈 ${r.period}<br>💰 ${r.total_sales || 0} ₽</div>`;
+            }
+            document.getElementById('reportsList').innerHTML = html;
+        } catch(e) { document.getElementById('reportsList').innerHTML = '❌ Ошибка'; }
+    }
+
+    async function generateReport() {
+        try {
+            const dealsRes = await fetch(API.deals);
+            const deals = await dealsRes.json();
+            let total = 0;
+            for(let d of deals) total += d.amount || 0;
+            
+            await fetch(API.reportsSales, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({period: 'daily', total: total, deals_count: deals.length})
+            });
+            loadReports();
+            addLog(`Создан отчет: продажи на сумму ${total} ₽`, 'success');
+            showMessage('✅ Отчет создан', 'success');
+        } catch(e) { addLog('Ошибка создания отчета', 'error'); showMessage('Ошибка', 'error'); }
+    }
+
+    // ========================================
+    // ОФОРМЛЕНИЕ ЗАКАЗА (ГЛАВНЫЙ ПРОЦЕСС)
+    // ========================================
+    async function createOrder() {
+        addLog('🚀 НАЧАЛО ПРОЦЕССА: Оформление заказа', 'info');
+        
+        try {
+            // ШАГ 1: Получаем корзину
+            addLog('📌 ШАГ 1: Получение корзины...', 'info');
+            const cartRes = await fetch(API.cart);
+            const cart = await cartRes.json();
+            
+            if(cart.length === 0) { 
+                addLog('❌ Корзина пуста, оформление невозможно', 'error');
+                showMessage('Корзина пуста!', 'error'); 
+                return; 
+            }
+            
+            let total = 0;
+            for(let item of cart) total += item.price;
+            addLog(`📌 Корзина: ${cart.length} товаров на сумму ${total} ₽`, 'info');
+            
+            // ШАГ 2: Создаем сделку
+            addLog('📌 ШАГ 2: Создание сделки в модуле В...', 'info');
+            const dealRes = await fetch(API.dealsCreate, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({amount: total, stage: 'new'})
+            });
+            
+            if(!dealRes.ok) throw new Error('Ошибка создания сделки');
+            const deal = await dealRes.json();
+            addLog(`✅ Сделка #${deal.id} создана на сумму ${total} ₽`, 'success');
+            
+            // ШАГ 3: Очищаем корзину
+            addLog('📌 ШАГ 3: Очистка корзины...', 'info');
+            await fetch(API.cartClear, {method: 'POST'});
+            addLog('✅ Корзина очищена', 'success');
+            
+            // ШАГ 4: Создаем задачу (опционально)
+            addLog('📌 ШАГ 4: Создание задачи для менеджера...', 'info');
+            await fetch(API.tasksCreate, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    title: `Обработать сделку #${deal.id}`,
+                    assigned_to: 'manager@crm.com',
+                    deal_id: deal.id,
+                    due_date: new Date(Date.now() + 3*24*60*60*1000).toISOString().split('T')[0]
+                })
+            });
+            addLog('✅ Задача создана', 'success');
+            
+            // Обновляем UI
+            loadCart();
+            loadDeals();
+            loadTasks();
+            
+            addLog(`🎉 ЗАКАЗ УСПЕШНО ОФОРМЛЕН! Сделка #${deal.id} на сумму ${total} ₽`, 'success');
+            showMessage(`✅ Заказ оформлен! Сумма: ${total} ₽`, 'success');
+            
+        } catch(e) {
+            addLog(`💥 ОШИБКА: ${e.message}`, 'error');
+            showMessage('Ошибка оформления заказа', 'error');
+        }
+    }
+
+    // ========================================
+    // ЗАПУСК
+    // ========================================
+    loadLeads();
+    loadContacts();
+    loadProducts();
+    loadCart();
+    loadDeals();
+    loadTasks();
+    loadReports();
+    checkServers();
+    
+    addLog('🟢 CRM система запущена', 'success');
+    addLog('📡 Ожидание действий пользователя...', 'info');
+
+    // Автообновление каждые 3 секунды
+    setInterval(() => { loadCart(); loadDeals(); }, 3000);
+</script>
+
+</body>
+</html>

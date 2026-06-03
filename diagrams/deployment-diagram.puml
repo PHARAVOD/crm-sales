@@ -1,0 +1,96 @@
+@startuml
+' ============================================
+' DEPLOYMENT DIAGRAM - Интеграционное решение CRM
+' ============================================
+
+title UML Deployment Diagram - Архитектура развертывания
+
+actor "Клиент" as Client
+
+node "Docker Host (Windows/Linux)" {
+    
+    rectangle "Docker Network (bridge)" {
+        
+        node "Nginx Reverse Proxy" {
+            artifact "nginx.conf"
+            artifact ":80" as NginxPort
+        }
+        
+        node "Модуль А (Каталог/Лиды)" {
+            artifact "app.py (Python/Flask)"
+            artifact ":5001" as CatalogPort
+        }
+        
+        node "Модуль Б (Корзина)" {
+            artifact "cart.py (Python/Flask)"
+            artifact ":5002" as CartPort
+        }
+        
+        node "Модуль В (Сделки)" {
+            artifact "server.js (Node.js/Express)"
+            artifact ":3000" as DealsPort
+        }
+        
+        node "Модуль D (Задачи)" {
+            artifact "main.py (Python/FastAPI)"
+            artifact ":5003" as TasksPort
+        }
+        
+        node "Модуль E (Отчеты)" {
+            artifact "reports.py (Python/Flask)"
+            artifact ":3001" as ReportsPort
+        }
+        
+        database "PostgreSQL" {
+            artifact ":5432" as DbPort
+            stereotype database
+        }
+        
+        database "Redis" {
+            artifact ":6379" as RedisPort
+            stereotype cache
+        }
+    }
+}
+
+node "GitHub" {
+    artifact "Репозиторий" as Repo
+}
+
+node "GitHub Actions" {
+    artifact "CI/CD Pipeline" as CI
+}
+
+' === СВЯЗИ ===
+Client --> NginxPort : HTTPS/HTTP
+NginxPort --> CatalogPort : /api/products
+NginxPort --> CartPort : /api/cart
+NginxPort --> DealsPort : /api/deals
+NginxPort --> TasksPort : /api/tasks
+NginxPort --> ReportsPort : /api/reports
+
+CatalogPort --> DbPort : PostgreSQL
+DealsPort --> DbPort : PostgreSQL
+TasksPort --> DbPort : PostgreSQL
+CartPort --> RedisPort : Session Cache
+CatalogPort --> RedisPort : Product Cache
+
+Client --> Repo : git push
+Repo --> CI : trigger
+CI --> Client : статус
+
+note right of CatalogPort
+  <b>Переменные окружения:</b>
+  DB_HOST, DB_PORT,
+  REDIS_HOST, REDIS_PORT
+end note
+
+legend right
+  | <b>Цветовая легенда</b> |
+  | <color:blue>Python/Flask</color> |
+  | <color:green>Node.js/Express</color> |
+  | <color:orange>Базы данных</color> |
+  | <color:purple>DevOps</color> |
+endlegend
+
+@enduml

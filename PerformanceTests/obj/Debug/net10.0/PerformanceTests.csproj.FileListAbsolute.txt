@@ -1,0 +1,15 @@
+C:\crm-sales\PerformanceTests\obj\Debug\net10.0\PerformanceTests.GeneratedMSBuildEditorConfig.editorconfig
+C:\crm-sales\PerformanceTests\obj\Debug\net10.0\PerformanceTests.AssemblyInfoInputs.cache
+C:\crm-sales\PerformanceTests\obj\Debug\net10.0\PerformanceTests.AssemblyInfo.cs
+C:\crm-sales\PerformanceTests\obj\Debug\net10.0\PerformanceTests.csproj.CoreCompileInputs.cache
+C:\crm-sales\PerformanceTests\obj\Debug\net10.0\PerformanceTests.sourcelink.json
+C:\crm-sales\PerformanceTests\bin\Debug\net10.0\PerformanceTests.exe
+C:\crm-sales\PerformanceTests\bin\Debug\net10.0\PerformanceTests.deps.json
+C:\crm-sales\PerformanceTests\bin\Debug\net10.0\PerformanceTests.runtimeconfig.json
+C:\crm-sales\PerformanceTests\bin\Debug\net10.0\PerformanceTests.dll
+C:\crm-sales\PerformanceTests\bin\Debug\net10.0\PerformanceTests.pdb
+C:\crm-sales\PerformanceTests\obj\Debug\net10.0\PerformanceTests.dll
+C:\crm-sales\PerformanceTests\obj\Debug\net10.0\refint\PerformanceTests.dll
+C:\crm-sales\PerformanceTests\obj\Debug\net10.0\PerformanceTests.pdb
+C:\crm-sales\PerformanceTests\obj\Debug\net10.0\PerformanceTests.genruntimeconfig.cache
+C:\crm-sales\PerformanceTests\obj\Debug\net10.0\ref\PerformanceTests.dll

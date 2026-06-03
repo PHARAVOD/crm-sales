@@ -1,8 +1,7 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
-from datetime import datetime
 import uvicorn
 
 app = FastAPI()
@@ -15,7 +14,6 @@ app.add_middleware(
 )
 
 tasks_db = []
-products_catalog = []  # Справочник товаров из модуля А
 task_counter = 1
 
 class TaskCreate(BaseModel):
@@ -29,12 +27,6 @@ class Task(TaskCreate):
     id: int
     status: str = "pending"
 
-class WebhookProduct(BaseModel):
-    event: str
-    timestamp: str
-    data: dict
-
-# ========== СУЩЕСТВУЮЩИЕ ЭНДПОИНТЫ ==========
 @app.get("/tasks", response_model=List[Task])
 def get_tasks():
     return tasks_db
@@ -44,7 +36,11 @@ def create_task(task: TaskCreate):
     global task_counter
     new_task = Task(
         id=task_counter,
-        **task.dict(),
+        title=task.title,
+        description=task.description,
+        deal_id=task.deal_id,
+        assigned_to=task.assigned_to,
+        due_date=task.due_date,
         status="pending"
     )
     tasks_db.append(new_task)
@@ -56,5 +52,24 @@ def complete_task(task_id: int):
     for task in tasks_db:
         if task.id == task_id:
             task.status = "completed"
-            return {"message": "Task completed", "task": task}
-    raise HTTPException(404, "Task not
+            return {"message": "Task completed", "task": task.dict()}
+    raise HTTPException(status_code=404, detail="Task not found")
+
+@app.get("/tasks/{task_id}")
+def get_task(task_id: int):
+    for task in tasks_db:
+        if task.id == task_id:
+            return task
+    raise HTTPException(status_code=404, detail="Task not found")
+
+@app.delete("/tasks/{task_id}")
+def delete_task(task_id: int):
+    global tasks_db
+    for i, task in enumerate(tasks_db):
+        if task.id == task_id:
+            tasks_db.pop(i)
+            return {"message": "Task deleted"}
+    raise HTTPException(status_code=404, detail="Task not found")
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=5003)

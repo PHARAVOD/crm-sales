@@ -1,70 +1,70 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 from flask_cors import CORS
-from webhooks.webhook_sender import WebhookSender
 
 app = Flask(__name__)
 CORS(app)
 
-# Создаем отправитель вебхуков
-webhook_sender = WebhookSender()
-
-# База данных товаров (в памяти)
+# Товары
 products = [
-    {"id": 1, "name": "Ноутбук", "price": 50000, "category": "Электроника"},
-    {"id": 2, "name": "Мышь", "price": 1000, "category": "Электроника"},
-    {"id": 3, "name": "Клавиатура", "price": 3000, "category": "Электроника"}
+    {"id": 1, "name": "Ноутбук", "price": 50000},
+    {"id": 2, "name": "Мышь", "price": 1000},
+    {"id": 3, "name": "Клавиатура", "price": 3000},
+    {"id": 4, "name": "Монитор", "price": 25000}
+]
+
+# Лиды
+leads = [
+    {"id": 1, "name": "Иван Петров", "phone": "+79991234567", "status": "new"},
+    {"id": 2, "name": "Мария Сидорова", "phone": "+79997654321", "status": "contacted"}
 ]
 
 @app.route('/products', methods=['GET'])
 def get_products():
+    """Получить список товаров"""
     return jsonify(products)
 
-@app.route('/products', methods=['POST'])
-def create_product():
-    """Создание товара с отправкой вебхука"""
-    data = request.json
-    
-    new_product = {
-        "id": len(products) + 1,
-        "name": data.get('name'),
-        "price": data.get('price'),
-        "category": data.get('category')
-    }
-    
-    products.append(new_product)
-    
-    # ОТПРАВЛЯЕМ ВЕБХУК В ДРУГИЕ МОДУЛИ
-    webhook_sender.send_product_created(new_product)
-    
-    return jsonify(new_product), 201
+@app.route('/leads', methods=['GET'])
+def get_leads():
+    """Получить список лидов"""
+    return jsonify(leads)
 
-@app.route('/products/<int:product_id>', methods=['PUT'])
-def update_product(product_id):
-    """Обновление товара с отправкой вебхука"""
+@app.route('/leads', methods=['POST'])
+def create_lead():
+    """Создать нового лида"""
+    from flask import request
+    import uuid
+    
     data = request.json
-    
-    for product in products:
-        if product['id'] == product_id:
-            changes = {}
-            if 'name' in data and product['name'] != data['name']:
-                changes['name'] = {'old': product['name'], 'new': data['name']}
-                product['name'] = data['name']
-            
-            if 'price' in data and product['price'] != data['price']:
-                changes['price'] = {'old': product['price'], 'new': data['price']}
-                product['price'] = data['price']
-            
-            # ОТПРАВЛЯЕМ ВЕБХУК ОБ ОБНОВЛЕНИИ
-            webhook_sender.send_product_updated({
-                'id': product_id,
-                'name': product['name'],
-                'price': product['price'],
-                'changes': changes
-            })
-            
-            return jsonify(product)
-    
-    return jsonify({"error": "Product not found"}), 404
+    new_lead = {
+        "id": len(leads) + 1,
+        "name": data.get('name'),
+        "phone": data.get('phone'),
+        "email": data.get('email'),
+        "status": "new"
+    }
+    leads.append(new_lead)
+    return jsonify(new_lead), 201
+# Контакты (временно, для теста)
+contacts = [
+    {"id": 1, "name": "Иван Петров", "phone": "+79991234567", "email": "ivan@example.com"},
+    {"id": 2, "name": "Мария Сидорова", "phone": "+79997654321", "email": "maria@example.com"}
+]
+
+@app.route('/contacts', methods=['GET'])
+def get_contacts():
+    return jsonify(contacts)
+
+@app.route('/contacts', methods=['POST'])
+def create_contact():
+    data = request.json
+    new_contact = {
+        "id": len(contacts) + 1,
+        "name": data.get('name'),
+        "phone": data.get('phone'),
+        "email": data.get('email')
+    }
+    contacts.append(new_contact)
+    return jsonify(new_contact), 201
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

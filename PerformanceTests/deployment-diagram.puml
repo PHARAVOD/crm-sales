@@ -1,0 +1,102 @@
+@startuml
+' ============================================
+' DEPLOYMENT DIAGRAM - Архитектура развертывания
+' ============================================
+
+title UML Deployment Diagram - Интеграционное решение CRM
+
+node "Клиент (Browser)" as Client {
+  artifact "HTML/CSS/JS" as WebUI
+}
+
+node "Docker Host (Linux/Windows)" as DockerHost {
+  
+  rectangle "Docker Network" {
+    
+    node "Модуль А (Каталог)" as Catalog {
+      artifact "app.py" as CatalogApp
+      artifact "Flask :5001" as CatalogPort
+    }
+    
+    node "Модуль Б (Корзина)" as Cart {
+      artifact "cart.py" as CartApp
+      artifact "Flask :5002" as CartPort
+    }
+    
+    node "Модуль В (Сделки)" as Deals {
+      artifact "server.js" as DealsApp
+      artifact "Node.js :3000" as DealsPort
+    }
+    
+    node "Модуль D (Задачи)" as Tasks {
+      artifact "main.py" as TasksApp
+      artifact "FastAPI :5003" as TasksPort
+    }
+    
+    node "Модуль E (Отчеты)" as Reports {
+      artifact "reports.py" as ReportsApp
+      artifact "Flask :3001" as ReportsPort
+    }
+    
+    node "Сервис Кэширования" as Redis {
+      artifact "Redis :6379" as RedisPort
+      stereotype "Cache"
+    }
+    
+    node "База данных" as Database {
+      artifact "PostgreSQL :5432" as DbPort
+      stereotype "Database"
+    }
+    
+    node "Nginx Proxy" as Nginx {
+      artifact "nginx.conf" as NginxConf
+      artifact ":80" as NginxPort
+    }
+    
+  }
+}
+
+node "GitHub Actions" as CI {
+  artifact "CI/CD Pipeline" as CICD
+  artifact "Docker Registry" as Registry
+}
+
+node "Разработчик" as Dev {
+  artifact "VS Code" as VSCode
+  artifact "Git" as Git
+}
+
+' Связи между клиентом и сервером
+Client --> NginxPort : HTTP/HTTPS
+
+' Связи внутри Docker сети
+NginxPort --> CatalogPort : /api/products
+NginxPort --> CartPort : /api/cart
+NginxPort --> DealsPort : /api/deals
+NginxPort --> TasksPort : /api/tasks
+NginxPort --> ReportsPort : /api/reports
+
+' Связи с БД и кэшем
+CatalogPort --> DbPort : PostgreSQL
+DealsPort --> DbPort : PostgreSQL
+TasksPort --> DbPort : PostgreSQL
+
+CartPort --> RedisPort : Session Cache
+CatalogPort --> RedisPort : Product Cache
+
+' CI/CD связи
+Dev --> Git : git push
+Git --> CICD : trigger
+CICD --> Registry : docker push
+Registry --> DockerHost : docker pull
+
+' Легенда
+legend right
+  | <b>Цветовая легенда</b> |
+  | <color:blue>Модули Python</color> |
+  | <color:green>Модули Node.js</color> |
+  | <color:orange>Сервисы</color> |
+  | <color:purple>DevOps</color> |
+endlegend
+
+@enduml

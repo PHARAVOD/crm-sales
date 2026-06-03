@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Мой магазин</title>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .product {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+            display: inline-block;
+            width: 200px;
+        }
+        button {
+            background: blue;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+        }
+        .cart {
+            border: 1px solid green;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+            background: #ffe0e0;
+            padding: 10px;
+            margin: 10px;
+            display: none;
+        }
+        .success {
+            color: green;
+            background: #e0ffe0;
+            padding: 10px;
+            margin: 10px;
+            display: none;
+        }
+        .status {
+            font-size: 12px;
+            color: gray;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🛒 МОЙ МАГАЗИН</h1>
+
+<div id="errorMsg" class="error"></div>
+<div id="successMsg" class="success"></div>
+
+<div id="products"></div>
+
+<div class="cart">
+    <h2>Корзина</h2>
+    <div id="cartList">Пусто</div>
+    <button onclick="checkout()">Оформить заказ</button>
+</div>
+
+<div class="status" id="status"></div>
+
+<script>
+    // ========================================
+    // ПРОВЕРКА КАКИЕ СЕРВЕРЫ РАБОТАЮТ
+    // ========================================
+    
+    async function checkServers() {
+        let msg = "Статус: ";
+        
+        // Проверка модуля А (порт 5001)
+        try {
+            let res = await fetch('http://localhost:5001/products');
+            if (res.ok) msg += "✅ Товары ";
+            else msg += "❌ Товары ";
+        } catch(e) { msg += "❌ Товары "; }
+        
+        // Проверка модуля Б (порт 5002)
+        try {
+            let res = await fetch('http://localhost:5002/cart');
+            if (res.ok) msg += "✅ Корзина ";
+            else msg += "❌ Корзина ";
+        } catch(e) { msg += "❌ Корзина "; }
+        
+        // Проверка модуля В (порт 3000)
+        try {
+            let res = await fetch('http://localhost:3000/deals');
+            if (res.ok) msg += "✅ Сделки ";
+            else msg += "❌ Сделки ";
+        } catch(e) { msg += "❌ Сделки "; }
+        
+        document.getElementById('status').innerHTML = msg;
+    }
+    
+    // ========================================
+    // ЗАГРУЗКА ТОВАРОВ
+    // ========================================
+    
+    async function loadProducts() {
+        try {
+            let res = await fetch('http://localhost:5001/products');
+            let products = await res.json();
+            
+            let html = '';
+            for (let p of products) {
+                html += `
+                    <div class="product">
+                        <b>${p.name}</b><br>
+                        ${p.price} ₽<br>
+                        <button onclick="addToCart(${p.id}, '${p.name}', ${p.price})">➕ В корзину</button>
+                    </div>
+                `;
+            }
+            document.getElementById('products').innerHTML = html;
+            showMessage('Товары загружены', 'success');
+        } catch(e) {
+            document.getElementById('products').innerHTML = '<p style="color:red">❌ Ошибка: модуль А (порт 5001) не запущен</p>';
+            showMessage('Модуль А не работает! Запусти python app.py', 'error');
+        }
+    }
+    
+    // ========================================
+    // ДОБАВЛЕНИЕ В КОРЗИНУ
+    // ========================================
+    
+    async function addToCart(id, name, price) {
+        try {
+            let res = await fetch('http://localhost:5002/cart/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id, name: name, price: price})
+            });
+            
+            if (res.ok) {
+                showMessage(`${name} добавлен в корзину!`, 'success');
+                loadCart();
+            } else {
+                showMessage('Ошибка добавления', 'error');
+            }
+        } catch(e) {
+            showMessage('Ошибка: модуль Б (порт 5002) не запущен', 'error');
+        }
+    }
+    
+    // ========================================
+    // ЗАГРУЗКА КОРЗИНЫ
+    // ========================================
+    
+    async function loadCart() {
+        try {
+            let res = await fetch('http://localhost:5002/cart');
+            let cart = await res.json();
+            
+            if (cart.length === 0) {
+                document.getElementById('cartList').innerHTML = 'Пусто';
+                return;
+            }
+            
+            let total = 0;
+            let html = '';
+            for (let item of cart) {
+                total += item.price;
+                html += `<div>${item.name} - ${item.price} ₽</div>`;
+            }
+            html += `<hr><b>Итого: ${total} ₽</b>`;
+            document.getElementById('cartList').innerHTML = html;
+        } catch(e) {
+            document.getElementById('cartList').innerHTML = '❌ Ошибка загрузки';
+        }
+    }
+    
+    // ========================================
+    // ОФОРМЛЕНИЕ ЗАКАЗА
+    // ========================================
+    
+    async function checkout() {
+        try {
+            // Получаем корзину
+            let cartRes = await fetch('http://localhost:5002/cart');
+            let cart = await cartRes.json();
+            
+            if (cart.length === 0) {
+                showMessage('Корзина пуста!', 'error');
+                return;
+            }
+            
+            // Считаем сумму
+            let total = 0;
+            for (let item of cart) {
+                total += item.price;
+            }
+            
+            showMessage(`Оформляем заказ на ${total} ₽...`, 'success');
+            
+            // Создаем сделку в модуле В
+            let dealRes = await fetch('http://localhost:3000/deals/create', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    amount: total,
+                    stage: 'new'
+                })
+            });
+            
+            if (!dealRes.ok) {
+                throw new Error('Ошибка создания сделки');
+            }
+            
+            let deal = await dealRes.json();
+            
+            // Очищаем корзину
+            await fetch('http://localhost:5002/cart/clear', {method: 'POST'});
+            
+            // Обновляем корзину на странице
+            loadCart();
+            
+            showMessage(`✅ Заказ оформлен! Сделка #${deal.id} на сумму ${total} ₽`, 'success');
+            
+        } catch(e) {
+            showMessage('Ошибка: ' + e.message, 'error');
+        }
+    }
+    
+    // ========================================
+    // ПОКАЗ СООБЩЕНИЙ
+    // ========================================
+    
+    function showMessage(msg, type) {
+        if (type === 'error') {
+            let div = document.getElementById('errorMsg');
+            div.innerHTML = msg;
+            div.style.display = 'block';
+            setTimeout(() => { div.style.display = 'none'; }, 3000);
+        } else {
+            let div = document.getElementById('successMsg');
+            div.innerHTML = msg;
+            div.style.display = 'block';
+            setTimeout(() => { div.style.display = 'none'; }, 2000);
+        }
+    }
+    
+    // ========================================
+    // ЗАПУСК
+    // ========================================
+    
+    loadProducts();
+    loadCart();
+    checkServers();
+    
+    // Обновляем статус каждые 3 секунды
+    setInterval(checkServers, 3000);
+    setInterval(loadCart, 3000);
+    
+</script>
+
+</body>
+</html>
