@@ -5,7 +5,6 @@ app = Flask(__name__)
 CORS(app)
 
 
-# Данные товаров
 products = [
     {"id": 1, "name": "Ноутбук", "price": 50000},
     {"id": 2, "name": "Мышь", "price": 1000},
@@ -13,13 +12,11 @@ products = [
     {"id": 4, "name": "Монитор", "price": 25000}
 ]
 
-# Данные лидов
 leads = [
     {"id": 1, "name": "Иван Петров", "phone": "+79991234567", "status": "new"},
     {"id": 2, "name": "Мария Сидорова", "phone": "+79997654321", "status": "contacted"}
 ]
 
-# Данные контактов
 contacts = [
     {"id": 1, "name": "Иван Петров", "phone": "+79991234567", "email": "ivan@example.com"},
     {"id": 2, "name": "Мария Сидорова", "phone": "+79997654321", "email": "maria@example.com"}
@@ -28,19 +25,16 @@ contacts = [
 
 @app.route('/products', methods=['GET'])
 def get_products():
-    """Получить список товаров"""
     return jsonify(products)
 
 
 @app.route('/leads', methods=['GET'])
 def get_leads():
-    """Получить список лидов"""
     return jsonify(leads)
 
 
 @app.route('/leads', methods=['POST'])
 def create_lead():
-    """Создать нового лида"""
     data = request.json
     new_lead = {
         "id": len(leads) + 1,
@@ -54,7 +48,6 @@ def create_lead():
 
 @app.route('/contacts', methods=['GET'])
 def get_contacts():
-    """Получить список контактов"""
     return jsonify(contacts)
 
 
