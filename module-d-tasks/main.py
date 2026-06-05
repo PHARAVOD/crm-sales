@@ -16,6 +16,7 @@ app.add_middleware(
 tasks_db = []
 task_counter = 1
 
+
 class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = None
@@ -23,16 +24,21 @@ class TaskCreate(BaseModel):
     assigned_to: str
     due_date: str
 
+
 class Task(TaskCreate):
     id: int
     status: str = "pending"
 
+
 @app.get("/tasks", response_model=List[Task])
 def get_tasks():
+    """Получить список задач"""
     return tasks_db
+
 
 @app.post("/tasks/create", response_model=Task)
 def create_task(task: TaskCreate):
+    """Создать новую задачу"""
     global task_counter
     new_task = Task(
         id=task_counter,
@@ -47,29 +53,16 @@ def create_task(task: TaskCreate):
     task_counter += 1
     return new_task
 
+
 @app.patch("/tasks/{task_id}/complete")
 def complete_task(task_id: int):
+    """Отметить задачу выполненной"""
     for task in tasks_db:
         if task.id == task_id:
             task.status = "completed"
             return {"message": "Task completed", "task": task.dict()}
     raise HTTPException(status_code=404, detail="Task not found")
 
-@app.get("/tasks/{task_id}")
-def get_task(task_id: int):
-    for task in tasks_db:
-        if task.id == task_id:
-            return task
-    raise HTTPException(status_code=404, detail="Task not found")
-
-@app.delete("/tasks/{task_id}")
-def delete_task(task_id: int):
-    global tasks_db
-    for i, task in enumerate(tasks_db):
-        if task.id == task_id:
-            tasks_db.pop(i)
-            return {"message": "Task deleted"}
-    raise HTTPException(status_code=404, detail="Task not found")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5003)

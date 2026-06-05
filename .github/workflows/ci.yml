@@ -10,48 +10,42 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install Python dependencies
         run: |
           pip install flask flask-cors fastapi uvicorn
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.x'
-      
-      - name: Install Node.js dependencies
-        run: |
-          cd module-c-deals
-          npm init -y
-          npm install express
-      
+
       - name: Check Python syntax (basic)
         run: |
           python -m py_compile module-a-leads/app.py
           python -m py_compile module-b-cart/cart.py
           python -m py_compile module-d-tasks/main.py
           python -m py_compile module-e-reports/reports.py
-      
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
       - name: Check Node.js syntax
         run: |
           node -c module-c-deals/server.js
-      
+
       - name: Docker Compose up
         run: |
           docker-compose up -d --build
           sleep 10
           docker-compose ps
-      
+
       - name: Test all endpoints
         run: |
           curl -f http://localhost:5001/products || exit 1
@@ -59,7 +53,7 @@ jobs:
           curl -f http://localhost:3000/deals || exit 1
           curl -f http://localhost:5003/tasks || exit 1
           curl -f http://localhost:3001/reports || exit 1
-      
+
       - name: Stop Docker Compose
         if: always()
         run: docker-compose down

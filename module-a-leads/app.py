@@ -25,16 +25,19 @@ contacts = [
 
 @app.route('/products', methods=['GET'])
 def get_products():
+    """Получить список товаров"""
     return jsonify(products)
 
 
 @app.route('/leads', methods=['GET'])
 def get_leads():
+    """Получить список лидов"""
     return jsonify(leads)
 
 
 @app.route('/leads', methods=['POST'])
 def create_lead():
+    """Создать нового лида"""
     data = request.json
     new_lead = {
         "id": len(leads) + 1,
@@ -48,6 +51,7 @@ def create_lead():
 
 @app.route('/contacts', methods=['GET'])
 def get_contacts():
+    """Получить список контактов"""
     return jsonify(contacts)
 
 
